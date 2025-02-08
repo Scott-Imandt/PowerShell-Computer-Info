@@ -7,11 +7,13 @@
         mc:Ignorable="d"
         Title="Computer Information" Height="800" Width="1000" WindowStartupLocation="CenterScreen">
     <Grid Width="1000" Height="800">
-        <TextBox x:Name="TextBox_ComputerName" HorizontalAlignment="Left" Margin="432,92,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="200" Height="26"/>
-        <Label Content="Enter a Computer Name:" HorizontalAlignment="Left" Margin="282,90,0,0" VerticalAlignment="Top" Width="141" Height="26"/>
-        <Button x:Name="Button_Submit" Content="Submit" HorizontalAlignment="Left" Margin="643,92,0,0" VerticalAlignment="Top" Height="26" Width="72"/>
-        <DataGrid x:Name="DataGrid_Printers" Margin="64,141,64,72" Width="872" Height="583" GridLinesVisibility="All" FontSize="24"/>
-        <Image x:Name="img_Loading" HorizontalAlignment="Left" Height="100" Margin="732,22,0,0" VerticalAlignment="Top" Width="100" Source="/LoadingGIF.gif"/>
+        <TextBox x:Name="TextBox_ComputerName" HorizontalAlignment="Left" Margin="426,40,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="200" Height="26" FontSize="14"/>
+        <Label Content="Enter a Computer Name or IP Address:" HorizontalAlignment="Left" Margin="205,37,0,0" VerticalAlignment="Top" Width="216" Height="26"/>
+        <Button x:Name="Button_Submit" Content="Submit" HorizontalAlignment="Left" Margin="647,40,0,0" VerticalAlignment="Top" Height="26" Width="72"/>
+        <DataGrid x:Name="DataGrid_Printers" Margin="64,82,64,400" Width="872" GridLinesVisibility="All" FontSize="24"/>
+        <DataGrid x:Name="DataGrid_USB" Margin="64,414,64,42" Width="872" GridLinesVisibility="All" FontSize="24"/>
+        <Button x:Name="Button_DIR" Content="Launch Computer DIR" HorizontalAlignment="Left" Margin="806,40,0,0" VerticalAlignment="Top" Height="26" Width="130" Visibility="Hidden"/>
 
     </Grid>
 </Window>
+

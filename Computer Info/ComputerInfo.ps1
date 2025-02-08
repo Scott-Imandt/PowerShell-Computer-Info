@@ -5,6 +5,7 @@ Add-Type -AssemblyName System.Drawing
 $currentDirectory = Get-Location
 Write-Host $currentDirectory
 $xamlPath = Join-Path $currentDirectory "\MainWindow.xaml"
+#$xamlPath = "D:\Computer Info\MainWindow.xaml"
 $inputXAML=Get-Content -Path $xamlPath -Raw
 $inputXAML=$inputXAML -replace 'mc:Ignorable="d"','' -replace "x:N","N" -replace '^<Win.*','<Window'
 [XML]$XAML=$inputXAML
@@ -26,45 +27,90 @@ $xaml.SelectNodes("//*[@Name]") | ForEach-Object {
 }
 
 
-$Columns=@(
+$ColumnsPrinters=@(
     'Name'
     'DriverName'
     'PortName'
 )
 
+$ColumnsUSB=@(
+    'Manufacturer'
+    'Description'
+    'Service'
+    'PNPClass'
+    'DeviceID'
 
+)
 
 $var_DataGrid_Printers.FontSize= '18'
-$DeviceDataTable=New-Object System.Data.DataTable
-[void]$DeviceDataTable.Columns.AddRange($Columns)
+$PrinterDataTable=New-Object System.Data.DataTable
+[void]$PrinterDataTable.Columns.AddRange($ColumnsPrinters)
+
+$var_DataGrid_USB.FontSize= '18'
+$USBDataTable=New-Object System.Data.DataTable
+[void]$USBDataTable.Columns.AddRange($ColumnsUSB)
+
+$Global:ComputerName = $null
 
 
 $var_Button_Submit.Add_Click({
     
-    $ComputerName = $var_TextBox_ComputerName.Text
+    $Global:ComputerName = $var_TextBox_ComputerName.Text
 
     try{
-        $DeviceDataTable.Clear()
+        $PrinterDataTable.Clear()
         $var_DataGrid_Printers.Clear()
-        $Devices = get-wmiobject -class win32_printer -computername $ComputerName -property "Name, DriverName, PortName" | Select-Object $Columns
-    
-        if ($Devices) {
+        $USBDataTable.Clear()
+        $var_DataGrid_USB.Clear()
+        $var_Button_DIR.Visibility = 'Hidden'
+        
+        $Printers = get-wmiobject -class win32_printer -computername $ComputerName -property "Name, DriverName, PortName" | Select-Object $ColumnsPrinters
+        
+        $USBs = gwmi Win32_USBControllerDevice -computername $ComputerName |%{[wmi]($_.Dependent)} | Sort Manufacturer,Description,PNPClass,DeviceID | Select-Object $ColumnsUSB
 
+        if($Printers -or $USBs){
+            $var_Button_DIR.Visibility = 'Visible'
+        }
+        else{
             
-            foreach($Device in $Devices){
+            [System.Windows.Forms.MessageBox]::Show("No USB or Printer Devices found on $ComputerName.")
+            return
+        }
+
+        if ($Printers) {
+
+            foreach($Printer in $Printers){
                 $Entry=@()
-                foreach($Column in $Columns){
-                    $Entry+=$Device.$Column
+                foreach($Column in $ColumnsPrinters){
+                    $Entry+=$Printer.$Column
                 }
-                [void]$DeviceDataTable.Rows.Add($Entry)
+                [void]$PrinterDataTable.Rows.Add($Entry)
             }
          
-            $var_DataGrid_Printers.ItemsSource=$DeviceDataTable.DefaultView
+            $var_DataGrid_Printers.ItemsSource=$PrinterDataTable.DefaultView
             $var_DataGrid_Printers.IsReadOnly=$true
             $var_DataGrid_Printers.GridLinesVisibility="Horizontal"
         
         } else {
-            [System.Windows.Forms.MessageBox]::Show("No Devices found on $ComputerName.")      
+            [System.Windows.Forms.MessageBox]::Show("No Printers found on $ComputerName.")      
+        }
+
+        if ($USBs) {
+ 
+            foreach($USB in $USBs){
+                $Entry=@()
+                foreach($Column in $ColumnsUSB){
+                    $Entry+=$USB.$Column
+                }
+                [void]$USBDataTable.Rows.Add($Entry)
+            }
+         
+            $var_DataGrid_USB.ItemsSource=$USBDataTable.DefaultView
+            $var_DataGrid_USB.IsReadOnly=$true
+            $var_DataGrid_USB.GridLinesVisibility="Horizontal"
+        
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("No USB Devices found on $ComputerName.")      
         }
     
     }catch{
@@ -73,9 +119,20 @@ $var_Button_Submit.Add_Click({
     
     }
 
+
 })
 
+$var_Button_DIR.Add_Click({
+    
+    try{
+        Invoke-Item "\\$ComputerName\c$" -ErrorAction Stop
+    }
+    catch{
+        [System.Windows.Forms.MessageBox]::Show("Error: " + $_.Exception.Message)
+        
+    }
 
+})
 
 
 $form1.showDialog()
