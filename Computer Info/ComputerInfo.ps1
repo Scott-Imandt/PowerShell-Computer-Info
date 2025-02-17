@@ -26,6 +26,8 @@ $xaml.SelectNodes("//*[@Name]") | ForEach-Object {
     }
 }
 
+$form1.Icon = Join-Path $currentDirectory "\Computer info Icon.ico"
+
 
 $ColumnsPrinters=@(
     'Name'
